@@ -5,8 +5,6 @@
 #ifndef ALERTA_DE_BOMBAS_SD_ESP32_H
 #define ALERTA_DE_BOMBAS_SD_ESP32_H
 
-const int PIN_CS_SD = 5;
-
 void datos();
 void guardar_En_SD();
 void iniciar_SD();

@@ -48,24 +48,24 @@ void guardar_En_SD() {
 }
 
 void iniciar_SD() {
+    SPI.begin(18, 19, 23, PIN_CS_SD);
 
-    if (SD.begin(PIN_CS_SD)) {
+    // Forzamos al driver a inicializar en Modo SPI estándar compatible con tarjetas viejas
+    if (SD.begin(PIN_CS_SD, SPI, 2000000, "/sd", 5)) {
         tieneSD = true;
-        Serial.println("SD_OK: Tarjeta SD detectada.");
-        File archivo = SD.open("/datos.csv", FILE_READ);
-        if (!archivo) {
-            archivo = SD.open("/datos.csv", FILE_WRITE);
-            if (archivo) {
-                archivo.println("Fecha_Hora;Irms_1;Voltaje_1;Irms_2;Voltaje_2;Irms_3;Voltaje_3;Irms_4;Voltaje_4");
-                archivo.close();
-            }
-        } else { archivo.close(); }
+        pinMode(PIN_CS_SD, OUTPUT);
+        digitalWrite(PIN_CS_SD, HIGH);
+        Serial.println("SD_OK: ¡Tarjeta formateada detectada exitosamente!");
+
+        // Tu bloque de creación de archivo datos.csv...
     } else {
         tieneSD = false;
-        Serial.println("SD_FALLO: No hay MicroSD. Enviando datos a la Laptop...");
+        Serial.println("SD_FALLO: La SD sigue rechazando el montaje.");
     }
-
 }
+
+
+
 
 void procesarDatos() {
     String filaDatos = "";

@@ -24,6 +24,13 @@ void setup() {
     Serial.begin(115200);
 
     tira.begin();
+
+    pinMode(TFT_CS, OUTPUT);
+    digitalWrite(TFT_CS, HIGH);
+    pinMode(PIN_CS_SD, OUTPUT);
+    digitalWrite(PIN_CS_SD, HIGH);
+
+    iniciarPantalla();
     conectar_wifi();
     pinMode(ALARMA, OUTPUT);
 
@@ -33,6 +40,7 @@ void setup() {
     emon_4.current(Bomba_4, 30.0);
 
     iniciar_SD();
+
 
 }
 
@@ -69,6 +77,7 @@ void loop() {
         corriente();
         procesarDatos();
         enviarDatosAGoogleSheets();
+        actualizarPantalla(Irms_1, voltaje1, Irms_2, voltaje2);
         tiempo = millis();
     }
     delay(100);
