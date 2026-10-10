@@ -2,6 +2,7 @@
 #include "wifi_esp32.h"
 #include "SD_esp32.h"
 #include "avisos.h"
+#include "reloj_esp32.h"
 
 #include <WiFi.h>
 #include <Arduino.h>
@@ -25,19 +26,21 @@ void setup() {
 
     tira.begin();
 
-    pinMode(TFT_CS, OUTPUT);
-    digitalWrite(TFT_CS, HIGH);
     pinMode(PIN_CS_SD, OUTPUT);
     digitalWrite(PIN_CS_SD, HIGH);
+    pinMode(TFT_CS, OUTPUT);
+    digitalWrite(TFT_CS, HIGH);
 
-    iniciarPantalla();
-    conectar_wifi();
     pinMode(ALARMA, OUTPUT);
 
     emon_1.current(Bomba_1, 30.0);
     emon_2.current(Bomba_2, 30.0);
     emon_3.current(Bomba_3, 30.0);
     emon_4.current(Bomba_4, 30.0);
+
+    iniciarPantalla();
+    conectar_wifi();
+    iniciar_RTC();
 
     iniciar_SD();
 
@@ -77,7 +80,8 @@ void loop() {
         corriente();
         procesarDatos();
         enviarDatosAGoogleSheets();
-        actualizarPantalla(Irms_1, voltaje1, Irms_2, voltaje2);
+        Serial.println(obtenerFechaHoraRTC());
+        actualizarPantalla(Irms_1, voltaje1, Irms_2, voltaje2, Irms_3, voltaje3, Irms_4, voltaje4);
         tiempo = millis();
     }
     delay(100);

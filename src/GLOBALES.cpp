@@ -4,7 +4,9 @@
 
 #include "GLOBALES.h"
 
-bool tieneSD = false;
+bool Guardado_microSD = false;
+bool rtcConectado = false;
+bool envio_GoogleSheets = false;
 
 unsigned long tiempo = 0;
 const int TIEMPO_CORTO = 1000; // 1000 = 1s

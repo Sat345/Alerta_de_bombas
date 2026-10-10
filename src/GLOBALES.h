@@ -5,7 +5,9 @@
 #ifndef ALERTA_DE_BOMBAS_GLOBALES_H
 #define ALERTA_DE_BOMBAS_GLOBALES_H
 
-extern bool tieneSD;
+extern bool Guardado_microSD;
+extern bool rtcConectado;
+extern bool envio_GoogleSheets;
 
 extern unsigned long tiempo;
 extern const int TIEMPO_CORTO; // 1000 = 1s

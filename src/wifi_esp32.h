@@ -7,6 +7,7 @@
 
 #include <Arduino.h>
 #include <Preferences.h>
+#include <WiFi.h>
 
 extern Preferences preferences;
 
