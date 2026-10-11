@@ -41,6 +41,7 @@ void setup() {
 
     iniciarPantalla();
     conectarWifi();
+    iniciarTareaNube();
     iniciarRTC();
     iniciarSD();
 

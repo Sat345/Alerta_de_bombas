@@ -9,6 +9,7 @@ extern bool tieneSD;
 const int PIN_CS_SD = 5;
 
 void guardar_En_SD();
+void iniciarTareaNube();
 void iniciarSD();
 void procesarDatos();
 void enviarDatosAGoogleSheets();

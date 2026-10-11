@@ -90,24 +90,20 @@ void procesarDatos() {
 
 const char* url_google_sheets = "https://script.google.com/macros/s/AKfycbyRAa_KPgM25ii4y9FH_3-m70nC8NbZWWQw7hYDXBO8roC-FOzlJt1uSkv6aw5fzvihFQ/exec";
 
-void enviarDatosAGoogleSheets() {
-    envio_GoogleSheets = false;
+static TaskHandle_t tareaNube = NULL;
+static char jsonPendiente[200];
+static volatile bool enviando = false;
 
+// Solo hace red. Corre en la tarea, nunca en el loop().
+static void enviarJSON(const char* json) {
     if (WiFi.status() != WL_CONNECTED) {
-        Serial.println("No se puede enviar a la nube: Sin conexión Wi-Fi.");
+        wifi = false;
+        envio_GoogleSheets = false;
+        Serial.println("Nube: sin Wi-Fi.");
         return;
     }
+    wifi = true;
 
-    // 1. Armar el JSON
-    String fechaLimpia = obtenerFechaHoraRTC();
-    fechaLimpia.trim();
-
-    char jsonBuffer[200];
-    snprintf(jsonBuffer, sizeof(jsonBuffer),
-             "{\"fecha_hora\":\"%s\",\"irms1\":%.2f,\"irms2\":%.2f,\"irms3\":%.2f,\"irms4\":%.2f}",
-             fechaLimpia.c_str(), Irms_1, Irms_2, Irms_3, Irms_4);
-
-    // 2. Conexión
     WiFiClientSecure cliente;
     cliente.setInsecure();
 
@@ -118,21 +114,40 @@ void enviarDatosAGoogleSheets() {
     http.setFollowRedirects(HTTPC_DISABLE_FOLLOW_REDIRECTS);
     http.addHeader("Content-Type", "application/json");
 
-    // 3. Un solo POST (ya no se sigue la redirección)
     unsigned long t0 = millis();
-    int codigo = http.POST(jsonBuffer);
+    int codigo = http.POST(json);
     unsigned long dt = millis() - t0;
     http.end();
 
     Serial.printf("Nube: HTTP %d en %lu ms\n", codigo, dt);
 
-    // 4. 200, 301, 302 o 303 significan que el script se ejecutó
-    if (codigo == 200 || codigo == 301 || codigo == 302 || codigo == 303) {
-        envio_GoogleSheets = true;
-        Serial.println("Nube: Datos enviados a Google Sheets.");
-    } else if (codigo > 0) {
-        Serial.printf("Nube: Error del servidor. Código HTTP: %d\n", codigo);
-    } else {
-        Serial.printf("Nube: Falló la conexión. Código: %d\n", codigo);
+    envio_GoogleSheets = (codigo == 200 || codigo == 301 || codigo == 302 || codigo == 303);
+}
+
+static void tareaEnvio(void* param) {
+    for (;;) {
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);   // duerme hasta que lo despierten
+        enviarJSON(jsonPendiente);
+        enviando = false;
     }
+}
+
+// Llamar UNA vez en setup()
+void iniciarTareaNube() {
+    xTaskCreatePinnedToCore(tareaEnvio, "nube", 12288, NULL, 1, &tareaNube, 0);
+}
+
+// Se llama desde el loop() como siempre: arma el JSON y despierta la tarea
+void enviarDatosAGoogleSheets() {
+    if (enviando || tareaNube == NULL) return;   // ya hay un envío en curso
+
+    String fecha = obtenerFechaHoraRTC();
+    fecha.trim();
+
+    snprintf(jsonPendiente, sizeof(jsonPendiente),
+             "{\"fecha_hora\":\"%s\",\"irms1\":%.2f,\"irms2\":%.2f,\"irms3\":%.2f,\"irms4\":%.2f}",
+             fecha.c_str(), Irms_1, Irms_2, Irms_3, Irms_4);
+
+    enviando = true;
+    xTaskNotifyGive(tareaNube);
 }
