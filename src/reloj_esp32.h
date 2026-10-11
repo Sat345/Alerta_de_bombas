@@ -8,6 +8,8 @@
 #include <RTClib.h>
 
 extern RTC_DS3231 rtc;
+const int PIN_SDA = 21;
+const int PIN_SCL = 22;
 
 void iniciarRTC();
 String obtenerFechaHoraRTC();

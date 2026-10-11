@@ -8,7 +8,7 @@ bool wifi = false;
 bool Guardado_microSD = false;
 bool envio_GoogleSheets = false;
 
-const int TIEMPO_MEDIO = 1000; // 1000 = 1s
+const int TIEMPO_MEDIO = 5000; // 1000 = 5s
 unsigned long tiempo_medio = 0;
 const int TIEMPO_CORTO = 500;  // 500 = 0.5s
 unsigned long tiempo_corto;

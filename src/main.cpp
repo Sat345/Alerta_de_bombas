@@ -105,7 +105,7 @@ void corriente() {
 
     bool alarma = false;
 
-    int corriente_limite = 15;
+    int corriente_limite = 20;
 
     double corriente[4] = {Irms_1, Irms_2, Irms_3, Irms_4};
     for(int i = 0; i < 4; i++) {

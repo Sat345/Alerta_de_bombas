@@ -12,7 +12,7 @@ RTC_DS3231 rtc;
 
 void iniciarRTC() {
     // Inicializamos el bus I2C en los pines nativos 21 y 22
-    Wire.begin(21, 22);
+    Wire.begin(PIN_SDA, PIN_SCL);
 
     if (!rtc.begin()) {
         Serial.println("RTC_FALLO: No se encontró el módulo HW-111 (DS3231).");
