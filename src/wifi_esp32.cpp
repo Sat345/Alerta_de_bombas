@@ -19,7 +19,7 @@ void configurarReloj() {
     configTime(-21600, 0, ntpServer);
 }
 
-String obtenerFechaHora() {
+String obtenerFechaHoraWifi() {
     struct tm timeinfo;
     if(!getLocalTime(&timeinfo)){
 
@@ -31,7 +31,7 @@ String obtenerFechaHora() {
     return String(buffer);
 }
 
-void conectar_wifi() {
+void conectarWifi() {
 
 
     preferences.begin("wifi-config", true);
@@ -71,7 +71,7 @@ void conectar_wifi() {
     }
 }
 
-void guardar_wiFi(String s, String p) {
+void guardarWiFi(String s, String p) {
     preferences.begin("wifi-config", false); // Abre el "archivo" wifi-config
     preferences.putString("ssid", s);        // Guarda el nombre de red
     preferences.putString("pass", p);        // Guarda la contraseña
@@ -79,7 +79,7 @@ void guardar_wiFi(String s, String p) {
     Serial.println("Datos guardados en memoria permanente.");
 }
 
-void configurar_wifi_manual() {
+void configurarWifiManual() {
     while(Serial.available() > 0) Serial.read();
 
     Serial.println("\n--- CONFIGURACIÓN DE NUEVA RED ---");
@@ -115,11 +115,11 @@ void configurar_wifi_manual() {
 
     if (WiFi.status() == WL_CONNECTED) {
         Serial.println("\n¡Conexión Exitosa!");
-        guardar_wiFi(tempSSID, tempPass);
+        guardarWiFi(tempSSID, tempPass);
         Serial.println("IP: " + WiFi.localIP().toString());
         configurarReloj();
     } else {
         Serial.println("Error: Datos incorrectos. No se guardó nada.");
-        conectar_wifi();
+        conectarWifi();
     }
 }

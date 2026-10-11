@@ -16,9 +16,9 @@ extern const char* password;
 extern const char* ntpServer;
 
 void configurarReloj();
-String obtenerFechaHora();
-void conectar_wifi();
-void guardar_wiFi(String s, String p);
-void configurar_wifi_manual();
+String obtenerFechaHoraWifi();
+void conectarWifi();
+void guardarWiFi(String s, String p);
+void configurarWifiManual();
 
 #endif //ALERTA_DE_BOMBAS_WIFI_ESP32_H

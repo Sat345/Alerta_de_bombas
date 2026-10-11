@@ -28,7 +28,7 @@ extern Adafruit_ST7735 tft;
 
 void color_led(int led, uint32_t color);
 void iniciarPantalla();
-void actualizarPantalla(double i1, int v1, double i2, int v2, double i3, int v3, double i4, int v4);
+void actualizarPantalla();
 void prueba();
 
 

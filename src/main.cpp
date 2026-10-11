@@ -19,7 +19,9 @@ const int Bomba_2 = 35;
 const int Bomba_3 = 36;
 const int Bomba_4 = 39;
 
+void actualizarCorriente();
 void corriente();
+void datos();
 
 void setup() {
     Serial.begin(115200);
@@ -39,17 +41,15 @@ void setup() {
     emon_4.current(Bomba_4, 30.0);
 
     iniciarPantalla();
-    conectar_wifi();
-    iniciar_RTC();
-
-    iniciar_SD();
+    conectarWifi();
+    iniciarRTC();
+    iniciarSD();
 
 
 }
 
 void loop() {
-
-     if (Serial.available() > 0) {
+    if (Serial.available() > 0) {
         char comando = Serial.read(); //leer
         switch (comando) {
             case 'V':
@@ -59,10 +59,10 @@ void loop() {
                 Serial.println("I: Cambiar nombre y contraseña de el wifi");
                 break;
             case 'F':
-                Serial.print("La fecha es: ");  Serial.println(obtenerFechaHora());
+                Serial.print("La fecha es: ");  Serial.println(obtenerFechaHoraWifi());
                 break;
             case 'W':
-                conectar_wifi();
+                conectarWifi();
                 if (WiFi.status() == WL_CONNECTED) {
                     Serial.println("¡Estas conectado a internet!");
                 } else {
@@ -70,44 +70,46 @@ void loop() {
                 }
                 break;
             case 'I':
-                configurar_wifi_manual();
+                configurarWifiManual();
                 break;
             default: ;
         }
     }
 
-    if (millis() - tiempo >= TIEMPO_CORTO) {
-        corriente();
+    if (millis() - tiempo_medio >= TIEMPO_MEDIO) {
         procesarDatos();
+
         enviarDatosAGoogleSheets();
-        Serial.println(obtenerFechaHoraRTC());
-        actualizarPantalla(Irms_1, voltaje1, Irms_2, voltaje2, Irms_3, voltaje3, Irms_4, voltaje4);
-        tiempo = millis();
+        tiempo_medio = millis();
     }
+
+    if (millis() - tiempo_corto >= TIEMPO_CORTO) {
+        corriente();
+        actualizarPantalla();
+        tiempo_corto = millis();
+    }
+
     delay(100);
 }
 
-void corriente() {
-
-    // Realizar 1480 muestras (aprox. 20 ciclos a 60Hz)
+void actualizarCorriente() {
     Irms_1 = emon_1.calcIrms(1480);
     Irms_2 = emon_2.calcIrms(1480);
     Irms_3 = emon_3.calcIrms(1480);
     Irms_4 = emon_4.calcIrms(1480);
+}
 
-    voltaje1 = analogRead(Bomba_1);
-    voltaje2 = analogRead(Bomba_2);
-    voltaje3 = analogRead(Bomba_3);
-    voltaje4 = analogRead(Bomba_4);
+void corriente() {
 
+    actualizarCorriente();
 
     bool alarma = false;
 
-    int corriente_limite = 2000;
+    int corriente_limite = 15;
 
-    int voltajes[4] = {voltaje1, voltaje2, voltaje3, voltaje4};
+    double corriente[4] = {Irms_1, Irms_2, Irms_3, Irms_4};
     for(int i = 0; i < 4; i++) {
-        if (voltajes[i] > corriente_limite) {
+        if (corriente[i] > corriente_limite) {
             color_led(i, tira.Color(255,0,0));
             digitalWrite(ALARMA, HIGH);
             alarma = true;
@@ -122,3 +124,13 @@ void corriente() {
 
 }
 
+void datos() {
+
+    Serial.print("\n--------------------------\n");
+
+    Serial.println(obtenerFechaHoraRTC());
+    Serial.print("Corriente Bomba 1: "); Serial.println(Irms_1);
+    Serial.print("Corriente Bomba 2: "); Serial.println(Irms_2);
+    Serial.print("Corriente Bomba 3: "); Serial.println(Irms_3);
+    Serial.print("Corriente Bomba 4: "); Serial.println(Irms_4);
+}

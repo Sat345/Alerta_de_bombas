@@ -16,7 +16,7 @@
 SdFat sdFatCard;
 bool tieneSD = false;
 
-void iniciar_SD() {
+void iniciarSD() {
     Guardado_microSD = false;
     tieneSD = false;
 
@@ -38,7 +38,7 @@ void iniciar_SD() {
             // Si el archivo está completamente vacío (tamaño 0), escribimos las cabeceras
             Guardado_microSD = true;
             if (archivoLocal.fileSize() == 0) {
-                archivoLocal.println("Fecha_Hora;Irms_1;Voltaje_1;Irms_2;Voltaje_2;Irms_3;Voltaje_3;Irms_4;Voltaje_4");
+                archivoLocal.println("Fecha_Hora,Irms_1,Irms_2,Irms_3,Irms_4");
                 Serial.println("¡Archivo datos.csv creado con cabeceras con éxito!");
             } else {
                 Serial.println("Archivo datos.csv ya existía con datos.");
@@ -57,13 +57,16 @@ void procesarDatos() {
     String fecha = obtenerFechaHoraRTC();
     if (fecha.length() < 2 || fecha.indexOf("Error") >= 0) {
         fecha = "00/00/0000 00:00:00"; // Estampa limpia para evitar romper el JSON de Google
+        color_led(4, tira.Color(255,0,0));
+    }else {
+        color_led(4, tira.Color(0,255,255));
     }
 
-    String filaDatos = fecha + ";";
-    filaDatos += String(Irms_1) + ";" + String(voltaje1) + ";" +
-                 String(Irms_2) + ";" + String(voltaje2) + ";" +
-                 String(Irms_3) + ";" + String(voltaje3) + ";" +
-                 String(Irms_4) + ";" + String(voltaje4);
+    String filaDatos = fecha + ",";
+    filaDatos += String(Irms_1) + "," +
+                 String(Irms_2) + "," +
+                 String(Irms_3) + "," +
+                 String(Irms_4);
 
     if (tieneSD) {
         File32 archivoLocal;
@@ -78,18 +81,19 @@ void procesarDatos() {
             tieneSD = false;
         }
     } else {
-        iniciar_SD();
+        iniciarSD();
         Serial.println(filaDatos);
     }
 }
 
 
 
-const char* url_google_sheets = "https://script.google.com/macros/s/AKfycbyfhKNxa6Bn3fiB2GkTO5Jl9NjbE8svH3BOmQu4xuVTU8g1-6WpV25NAqUYnFmpp-CEtA/exec";
+const char* url_google_sheets = "https://script.google.com/macros/s/AKfycbyRAa_KPgM25ii4y9FH_3-m70nC8NbZWWQw7hYDXBO8roC-FOzlJt1uSkv6aw5fzvihFQ/exec";
 
 void enviarDatosAGoogleSheets() {
     envio_GoogleSheets = false;
     if (WiFi.status() == WL_CONNECTED) {
+        wifi = true;
         WiFiClientSecure cliente;
         cliente.setInsecure();
 
@@ -105,14 +109,14 @@ void enviarDatosAGoogleSheets() {
         fechaLimpia.trim(); // .trim() elimina automáticamente cualquier espacio, \r o \n oculto al inicio o final
 
         // 2. Construcción segura del JSON usando el formateador nativo para evitar fallos de comillas manuales
-        char jsonBuffer[300];
+        char jsonBuffer[200];
         snprintf(jsonBuffer, sizeof(jsonBuffer),
-                 "{\"fecha_hora\":\"%s\",\"irms1\":%.2f,\"v1\":%d,\"irms2\":%.2f,\"v2\":%d,\"irms3\":%.2f,\"v3\":%d,\"irms4\":%.2f,\"v4\":%d}",
+                 "{\"fecha_hora\":\"%s\",\"irms1\":%.2f,\"irms2\":%.2f,\"irms3\":%.2f,\"irms4\":%.2f}",
                  fechaLimpia.c_str(),
-                 Irms_1, voltaje1,
-                 Irms_2, voltaje2,
-                 Irms_3, voltaje3,
-                 Irms_4, voltaje4);
+                 Irms_1,
+                 Irms_2,
+                 Irms_3,
+                 Irms_4);
 
         String cuerpoJSON = String(jsonBuffer);
 
@@ -144,6 +148,7 @@ void enviarDatosAGoogleSheets() {
 
         http.end();
     } else {
+        wifi = false;
         Serial.println("No se puede enviar a la nube: Sin conexión Wi-Fi.");
     }
 }

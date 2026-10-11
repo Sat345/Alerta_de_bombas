@@ -9,7 +9,7 @@
 
 extern RTC_DS3231 rtc;
 
-void iniciar_RTC();
+void iniciarRTC();
 String obtenerFechaHoraRTC();
 void sincronizarRelojConInternet();
 

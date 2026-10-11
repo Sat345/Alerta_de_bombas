@@ -10,7 +10,7 @@
 
 RTC_DS3231 rtc;
 
-void iniciar_RTC() {
+void iniciarRTC() {
     // Inicializamos el bus I2C en los pines nativos 21 y 22
     Wire.begin(21, 22);
 

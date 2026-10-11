@@ -38,7 +38,7 @@ void iniciarPantalla() {
     tft.fillRect(0, 105, tft.width(), 23, ST7735_BLACK);
 }
 
-void actualizarPantalla(double i1, int v1, double i2, int v2, double i3, int v3, double i4, int v4) {
+void actualizarPantalla() {
     tft.setTextSize(1);
 
     // ==========================================
@@ -64,23 +64,19 @@ void actualizarPantalla(double i1, int v1, double i2, int v2, double i3, int v3,
 
     // BOMBA 1 (Superior Izquierda)
     tft.setCursor(4, 24); tft.setTextColor(ST7735_CYAN, ST7735_BLACK); tft.print("BOMBA 1");
-    tft.setCursor(4, 38); tft.setTextColor(ST7735_WHITE, ST7735_BLACK); tft.printf("I: %.2f A ", i1);
-    tft.setCursor(4, 50); tft.printf("V: %d V   ", v1);
+    tft.setCursor(4, 38); tft.setTextColor(ST7735_WHITE, ST7735_BLACK); tft.printf("I: %.2f A ", Irms_1);
 
     // BOMBA 2 (Superior Derecha)
     tft.setCursor(86, 24); tft.setTextColor(ST7735_CYAN, ST7735_BLACK); tft.print("BOMBA 2");
-    tft.setCursor(86, 38); tft.setTextColor(ST7735_WHITE, ST7735_BLACK); tft.printf("I: %.2f A ", i2);
-    tft.setCursor(86, 50); tft.printf("V: %d V   ", v2);
+    tft.setCursor(86, 38); tft.setTextColor(ST7735_WHITE, ST7735_BLACK); tft.printf("I: %.2f A ", Irms_2);
 
     // BOMBA 3 (Inferior Izquierda)
     tft.setCursor(4, 76); tft.setTextColor(ST7735_CYAN, ST7735_BLACK); tft.print("BOMBA 3");
-    tft.setCursor(4, 88); tft.setTextColor(ST7735_WHITE, ST7735_BLACK); tft.printf("I: %.2f A ", i3);
-    tft.setCursor(4, 100); tft.printf("V: %d V   ", v3);
+    tft.setCursor(4, 88); tft.setTextColor(ST7735_WHITE, ST7735_BLACK); tft.printf("I: %.2f A ", Irms_3);
 
     // BOMBA 4 (Inferior Derecha)
     tft.setCursor(86, 76); tft.setTextColor(ST7735_CYAN, ST7735_BLACK); tft.print("BOMBA 4");
-    tft.setCursor(86, 88); tft.setTextColor(ST7735_WHITE, ST7735_BLACK); tft.printf("I: %.2f A ", i4);
-    tft.setCursor(86, 100); tft.printf("V: %d V   ", v4);
+    tft.setCursor(86, 88); tft.setTextColor(ST7735_WHITE, ST7735_BLACK); tft.printf("I: %.2f A ", Irms_4);
     tft.setCursor(4, 110);
 
     // ==========================================
@@ -88,23 +84,29 @@ void actualizarPantalla(double i1, int v1, double i2, int v2, double i3, int v3,
     // ==========================================
 
     // --- ESTADO WIFI ---
-    if (WiFi.status() == WL_CONNECTED) {
-        tft.setTextColor(ST7735_GREEN, ST7735_BLACK); tft.print("WIFI: OK ");
+    if (wifi) {
+        tft.setTextColor(ST7735_GREEN, ST7735_BLACK); tft.print("WIFI: OK |");
+        color_led(7, tira.Color(255,0,255));
     } else {
-        tft.setTextColor(ST7735_RED, ST7735_BLACK); tft.print("WIFI: ER ");
+        tft.setTextColor(ST7735_RED, ST7735_BLACK); tft.print("WIFI: ER |");
+        color_led(7, tira.Color(255,0,0));
     }
 
     // --- ESTADO SD ---
     if (Guardado_microSD) {
-        tft.setTextColor(ST7735_GREEN, ST7735_BLACK); tft.print("SD: OK ");
+        tft.setTextColor(ST7735_GREEN, ST7735_BLACK); tft.print("SD: OK |");
+        color_led(6, tira.Color(0,255,0));
     } else {
-        tft.setTextColor(ST7735_RED, ST7735_BLACK); tft.print("SD: ER ");
+        tft.setTextColor(ST7735_RED, ST7735_BLACK); tft.print("SD: ER |");
+        color_led(6, tira.Color(255,0,0));
     }
 
     // --- ESTADO NUBE (GOOGLE) ---
     if (envio_GoogleSheets) {
         tft.setTextColor(ST7735_GREEN, ST7735_BLACK); tft.print("WEB: OK");
+        color_led(5, tira.Color(255,255,0));
     } else {
         tft.setTextColor(ST7735_RED, ST7735_BLACK); tft.print("WEB: ER");
+        color_led(5, tira.Color(255,0,0));
     }
 }
