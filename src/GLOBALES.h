@@ -6,8 +6,12 @@
 #define ALERTA_DE_BOMBAS_GLOBALES_H
 
 extern bool wifi;
+extern bool prendidas;
 extern bool Guardado_microSD;
 extern bool envio_GoogleSheets;
+
+extern const int CORRIENTE_MINIMA;
+extern const int CORRIENTE_MAXIMA;
 
 extern const int TIEMPO_MEDIO; // 1000 = 1s
 extern unsigned long tiempo_medio;

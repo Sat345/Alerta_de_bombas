@@ -59,7 +59,7 @@ void procesarDatos() {
         fecha = "00/00/0000 00:00:00"; // Estampa limpia para evitar romper el JSON de Google
         color_led(4, tira.Color(255,0,0));
     }else {
-        color_led(4, tira.Color(0,255,255));
+        color_led(4, tira.Color(0,0,255));
     }
 
     String filaDatos = fecha + ",";
@@ -92,64 +92,47 @@ const char* url_google_sheets = "https://script.google.com/macros/s/AKfycbyRAa_K
 
 void enviarDatosAGoogleSheets() {
     envio_GoogleSheets = false;
-    if (WiFi.status() == WL_CONNECTED) {
-        wifi = true;
-        WiFiClientSecure cliente;
-        cliente.setInsecure();
 
-        HTTPClient http;
-        Serial.println("\nEnviando datos a la nube...");
-
-        http.begin(cliente, url_google_sheets);
-        http.setFollowRedirects(HTTPC_DISABLE_FOLLOW_REDIRECTS);
-        http.addHeader("Content-Type", "application/json");
-
-        // 1. Obtener la fecha del RTC y limpiarla de cualquier carácter extraño de control
-        String fechaLimpia = obtenerFechaHoraRTC();
-        fechaLimpia.trim(); // .trim() elimina automáticamente cualquier espacio, \r o \n oculto al inicio o final
-
-        // 2. Construcción segura del JSON usando el formateador nativo para evitar fallos de comillas manuales
-        char jsonBuffer[200];
-        snprintf(jsonBuffer, sizeof(jsonBuffer),
-                 "{\"fecha_hora\":\"%s\",\"irms1\":%.2f,\"irms2\":%.2f,\"irms3\":%.2f,\"irms4\":%.2f}",
-                 fechaLimpia.c_str(),
-                 Irms_1,
-                 Irms_2,
-                 Irms_3,
-                 Irms_4);
-
-        String cuerpoJSON = String(jsonBuffer);
-
-        // 3. Enviamos el POST inicial
-        int codigoRespuesta = http.POST(cuerpoJSON);
-
-        // 4. Manejo de redirección estándar de Google (301 / 302)
-        if (codigoRespuesta == 301 || codigoRespuesta == 302) {
-            String nuevaURL = http.getLocation();
-            http.end();
-
-            http.begin(cliente, nuevaURL);
-            codigoRespuesta = http.GET();
-        }
-
-        // 5. Evaluación de la respuesta del servidor
-        if (codigoRespuesta == 200) {
-            Serial.println("Nube: Datos enviados exitosamente a Google Sheets.");
-            String respuestaEnTexto = http.getString();
-            Serial.print("Respuesta de Google: "); Serial.println(respuestaEnTexto);
-            envio_GoogleSheets = true;
-        } else if (codigoRespuesta > 0) {
-            Serial.print("Nube: Error en el servidor de Google. Código HTTP: ");
-            Serial.println(codigoRespuesta);
-        } else {
-            Serial.print("Nube: Falló la conexión de red. Código: ");
-            Serial.println(codigoRespuesta);
-        }
-
-        http.end();
-    } else {
-        wifi = false;
+    if (WiFi.status() != WL_CONNECTED) {
         Serial.println("No se puede enviar a la nube: Sin conexión Wi-Fi.");
+        return;
+    }
+
+    // 1. Armar el JSON
+    String fechaLimpia = obtenerFechaHoraRTC();
+    fechaLimpia.trim();
+
+    char jsonBuffer[200];
+    snprintf(jsonBuffer, sizeof(jsonBuffer),
+             "{\"fecha_hora\":\"%s\",\"irms1\":%.2f,\"irms2\":%.2f,\"irms3\":%.2f,\"irms4\":%.2f}",
+             fechaLimpia.c_str(), Irms_1, Irms_2, Irms_3, Irms_4);
+
+    // 2. Conexión
+    WiFiClientSecure cliente;
+    cliente.setInsecure();
+
+    HTTPClient http;
+    http.setConnectTimeout(5000);
+    http.setTimeout(8000);
+    http.begin(cliente, url_google_sheets);
+    http.setFollowRedirects(HTTPC_DISABLE_FOLLOW_REDIRECTS);
+    http.addHeader("Content-Type", "application/json");
+
+    // 3. Un solo POST (ya no se sigue la redirección)
+    unsigned long t0 = millis();
+    int codigo = http.POST(jsonBuffer);
+    unsigned long dt = millis() - t0;
+    http.end();
+
+    Serial.printf("Nube: HTTP %d en %lu ms\n", codigo, dt);
+
+    // 4. 200, 301, 302 o 303 significan que el script se ejecutó
+    if (codigo == 200 || codigo == 301 || codigo == 302 || codigo == 303) {
+        envio_GoogleSheets = true;
+        Serial.println("Nube: Datos enviados a Google Sheets.");
+    } else if (codigo > 0) {
+        Serial.printf("Nube: Error del servidor. Código HTTP: %d\n", codigo);
+    } else {
+        Serial.printf("Nube: Falló la conexión. Código: %d\n", codigo);
     }
 }
-

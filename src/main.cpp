@@ -19,7 +19,6 @@ const int Bomba_2 = 35;
 const int Bomba_3 = 36;
 const int Bomba_4 = 39;
 
-void actualizarCorriente();
 void corriente();
 void datos();
 
@@ -76,45 +75,48 @@ void loop() {
         }
     }
 
-    if (millis() - tiempo_medio >= TIEMPO_MEDIO) {
+    if (millis() - tiempo_medio >= TIEMPO_MEDIO && prendidas ) {
         procesarDatos();
-
         enviarDatosAGoogleSheets();
+
         tiempo_medio = millis();
     }
 
     if (millis() - tiempo_corto >= TIEMPO_CORTO) {
         corriente();
         actualizarPantalla();
+
         tiempo_corto = millis();
     }
 
     delay(100);
 }
 
-void actualizarCorriente() {
+void corriente() {
+
     Irms_1 = emon_1.calcIrms(1480);
     Irms_2 = emon_2.calcIrms(1480);
     Irms_3 = emon_3.calcIrms(1480);
     Irms_4 = emon_4.calcIrms(1480);
-}
-
-void corriente() {
-
-    actualizarCorriente();
 
     bool alarma = false;
+    prendidas = false;
 
-    int corriente_limite = 20;
+    int corriente_maxima = 20;
+    int corriente_minima = 5;
 
     double corriente[4] = {Irms_1, Irms_2, Irms_3, Irms_4};
     for(int i = 0; i < 4; i++) {
-        if (corriente[i] > corriente_limite) {
+        if (corriente[i] > corriente_maxima) {
             color_led(i, tira.Color(255,0,0));
             digitalWrite(ALARMA, HIGH);
             alarma = true;
-        } else {
-            color_led(i, tira.Color(0,0,255));
+            prendidas = true;
+        } else if (corriente[i] < corriente_minima) {
+            color_led(i, tira.Color(0,255,255));
+        }else {
+            color_led(i, tira.Color(0,255,0));
+            prendidas = true;
         }
     }
 
