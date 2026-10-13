@@ -1,0 +1,29 @@
+function doPost(e) {
+  try {
+    // 1. Abrir la hoja de cálculo activa
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheets()[0]; // Selecciona la primera pestaña
+    
+    // 2. Extraer el paquete JSON que envió el ESP32
+    var datosJSON = JSON.parse(e.postData.contents);
+    
+    // 3. Acomodar las variables exactamente como las manda tu C++
+    var fecha_hora = datosJSON.fecha_hora;
+    var irms1      = datosJSON.irms1;
+    var irms2      = datosJSON.irms2;
+    var irms3      = datosJSON.irms3;
+    var irms4      = datosJSON.irms4;
+    
+    // 4. Añadir la fila con los datos de las 4 bombas al final de la hoja
+    sheet.appendRow([fecha_hora, irms1, irms2, irms3, irms4]);
+    
+    // 5. SOLUCIÓN AL ERROR 400: Responder un JSON de éxito bien estructurado
+    return ContentService.createTextOutput(JSON.stringify({ "resultado": "ok" }))
+                         .setMimeType(ContentService.MimeType.JSON);
+                         
+  } catch(error) {
+    // Si algo falla internamente en Google, le responde el error textualmente
+    return ContentService.createTextOutput(JSON.stringify({ "resultado": "error", "msg": error.toString() }))
+                         .setMimeType(ContentService.MimeType.JSON);
+  }
+}

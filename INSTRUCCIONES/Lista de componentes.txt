@@ -1,0 +1,19 @@
+ESP32-WROOM-32 WIFI+BT SoC Inside $200 (MercadoLibre ) 
+
+Pantalla LCD st7735 128x170 -  $95 (MercadoLibre)
+
+RTC DS3231 (I2C) 50$ - (tienda de electrónica)
+
+Módulo lector de tarjeta $45 (MercadoLibre)
+
+1 Potenciómetro  - $5 (tienda de electrónica)
+
+Tira De Neopixel - $64 (tienda de electrónica)
+      
+Buzzer activo - $ 15 (tienda electrónica)
+
+1 Capacitor de 1000 uf - $20 (tienda electrónica)
+
+Cable para protoboard - $30 (tienda electrónica)
+
+Protoboard *2 - $70 (tienda electrónica)
